@@ -66,19 +66,29 @@ class Products with ChangeNotifier {
     return _items.where((prodItem) => prodItem.isFavorite).toList();
   }
 
-  Future<void> addProduct(Product product) {
+  Future<void> fetchAndSetProducts() async {
     final url = Uri.parse(
         'https://flutter-shop-app-ef785-default-rtdb.firebaseio.com/products.json');
-    return http
-        .post(url,
-            body: json.encode({
-              'title': product.title,
-              'description': product.description,
-              'imageUrl': product.imageUrl,
-              'price': product.price,
-              'isFavorite': product.isFavorite
-            }))
-        .then((res) {
+    try {
+      final res = await http.get(url);
+      print(json.decode(res.body));
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  Future<void> addProduct(Product product) async {
+    final url = Uri.parse(
+        'https://flutter-shop-app-ef785-default-rtdb.firebaseio.com/products.json');
+    try {
+      final res = await http.post(url,
+          body: json.encode({
+            'title': product.title,
+            'description': product.description,
+            'imageUrl': product.imageUrl,
+            'price': product.price,
+            'isFavorite': product.isFavorite
+          }));
       final newProduct = Product(
           id: json.decode(res.body)["name"],
           title: product.title,
@@ -88,7 +98,10 @@ class Products with ChangeNotifier {
       _items.add(newProduct);
       // _items.insert(0, newProduct); // at the Start of the list
       notifyListeners();
-    });
+    } catch (error) {
+      print(error);
+      throw (error);
+    }
   }
 
   void updateProduct(String id, Product newProduct) {
