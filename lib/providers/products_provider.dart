@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/http_exceptions.dart';
 import 'dart:convert';
 import './product.dart';
 import 'package:http/http.dart' as http;
@@ -88,7 +89,7 @@ class Products with ChangeNotifier {
         },
       );
       _items = loadedProducts;
-      notifyListeners(); 
+      notifyListeners();
       print(json.decode(res.body));
     } catch (error) {
       throw error;
@@ -122,9 +123,18 @@ class Products with ChangeNotifier {
     }
   }
 
-  void updateProduct(String id, Product newProduct) {
+  Future<void> updateProduct(String id, Product newProduct) async {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
+      final url = Uri.parse(
+          'https://flutter-shop-app-ef785-default-rtdb.firebaseio.com/products/$id.json');
+      await http.patch(url,
+          body: json.encode({
+            'title': newProduct.title,
+            'description': newProduct.description,
+            'imageUrl': newProduct.imageUrl,
+            'price': newProduct.price
+          }));
       _items[prodIndex] = newProduct;
     } else {
       print('...');
@@ -132,8 +142,22 @@ class Products with ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteProduct(String id) {
-    _items.removeWhere((prod) => prod.id == id);
+  Future<void> deleteProduct(String id) async {
+    final url = Uri.parse(
+        'https://flutter-shop-app-ef785-default-rtdb.firebaseio.com/products/$id.json');
+    final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
+    Product? existingProduct = _items[existingProductIndex];
+    // var existingProduct = _items[existingProductIndex];
+    _items.removeAt(existingProductIndex);
     notifyListeners();
+    final res = await http.delete(url);
+    if (res.statusCode >= 400) {
+      _items.insert(existingProductIndex, existingProduct);
+      notifyListeners();
+      throw HttpException('Could not delte product');
+    }
+    existingProduct = null;
+
+    // _items.removeWhere((prod) => prod.id == id);
   }
 }
