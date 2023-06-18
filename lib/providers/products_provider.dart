@@ -90,7 +90,6 @@ class Products with ChangeNotifier {
       );
       _items = loadedProducts;
       notifyListeners();
-      print(json.decode(res.body));
     } catch (error) {
       throw error;
     }

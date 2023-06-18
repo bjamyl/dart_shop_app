@@ -29,6 +29,11 @@ class Orders with ChangeNotifier {
     final res = await http.get(url);
     final List<OrderItem> loadedOrders = [];
     final extractedData = json.decode(res.body) as Map<String, dynamic>;
+    print(res.body);
+    if (extractedData.isEmpty) {
+      return;
+    }
+
     extractedData.forEach((orderId, orderData) {
       loadedOrders.add(
         OrderItem(
@@ -44,6 +49,9 @@ class Orders with ChangeNotifier {
                 .toList()),
       );
     });
+
+    _orders = loadedOrders.reversed.toList();
+    notifyListeners();
   }
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
