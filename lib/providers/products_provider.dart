@@ -41,8 +41,9 @@ class Products with ChangeNotifier {
   ];
 
   final String authToken;
+  final String userId;
 
-  Products(this.authToken, this._items);
+  Products(this.authToken, this._items, this.userId);
 
   Product findById(String id) {
     return _items.firstWhere((prod) => prod.id == id);
@@ -75,6 +76,12 @@ class Products with ChangeNotifier {
     try {
       final res = await http.get(url);
       final extractedData = json.decode(res.body) as Map<String, dynamic>;
+
+      final favUrl = Uri.parse(
+          'https://flutter-shop-app-ef785-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$authToken');
+
+      final favoriteResponse = await http.get(favUrl);
+      final favData = json.decode(favoriteResponse.body);
       final List<Product> loadedProducts = [];
       extractedData.forEach(
         (prodId, prodData) {
@@ -85,7 +92,7 @@ class Products with ChangeNotifier {
               description: prodData['description'],
               price: prodData['price'],
               imageUrl: prodData['imageUrl'],
-              isFavorite: prodData['isFavorite'],
+              isFavorite: favData == null ? false : favData[prodId] ?? false,
             ),
           );
         },
@@ -107,7 +114,6 @@ class Products with ChangeNotifier {
             'description': product.description,
             'imageUrl': product.imageUrl,
             'price': product.price,
-            'isFavorite': product.isFavorite
           }));
       final newProduct = Product(
           id: json.decode(res.body)["name"],
