@@ -23,19 +23,18 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (ctx) => Auth()),
-          ChangeNotifierProvider(create: (ctx) => Products('', [], '')),
           ChangeNotifierProxyProvider<Auth, Products>(
-            create: (ctx) => Products('', [], ''),
+            create: (ctx) => Products(null, [], null),
             update: (ctx, auth, previousProducts) => Products(
-                auth.token as String,
+                auth.token,
                 previousProducts!.items,
-                auth.userId as String),
+                auth.userId),
           ),
           ChangeNotifierProvider(create: (ctx) => Cart()),
           ChangeNotifierProxyProvider<Auth, Orders>(
               create: (ctx) => Orders('', []),
               update: (ctx, auth, previousOrders) =>
-                  Orders(auth.token.toString(), previousOrders!.orders))
+                  Orders(auth.token, previousOrders!.orders))
         ],
         child: Consumer<Auth>(
           builder: (ctx, auth, _) => MaterialApp(
@@ -46,7 +45,7 @@ class MyApp extends StatelessWidget {
                     ColorScheme.fromSwatch(primarySwatch: Colors.purple)
                         .copyWith(secondary: Colors.orangeAccent),
                 fontFamily: 'Lato'),
-            home: auth.isAuth! ? ProductOverviewScreen() : AuthScreen(),
+            home: auth.isAuth ? ProductOverviewScreen() : AuthScreen(),
             routes: {
               ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
               CartScreen.routeName: (ctx) => CartScreen(),

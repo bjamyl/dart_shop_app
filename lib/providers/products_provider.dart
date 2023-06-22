@@ -40,8 +40,8 @@ class Products with ChangeNotifier {
     // ),
   ];
 
-  final String authToken;
-  final String userId;
+   String? authToken;
+   String? userId;
 
   Products(this.authToken, this._items, this.userId);
 

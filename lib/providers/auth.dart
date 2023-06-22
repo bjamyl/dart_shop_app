@@ -8,7 +8,7 @@ class Auth with ChangeNotifier {
   DateTime? _expiryDate;
   String? _userId;
 
-  bool? get isAuth {
+  bool get isAuth {
     return token != null;
   }
 
@@ -49,7 +49,6 @@ class Auth with ChangeNotifier {
       _userId = responseBody['localId'];
       _expiryDate = DateTime.now()
           .add(Duration(seconds: int.parse(responseBody['expiresIn'])));
-      print(_token);
       notifyListeners();
     } catch (e) {
       throw e;
@@ -62,5 +61,12 @@ class Auth with ChangeNotifier {
 
   Future<void> login(String email, String password) async {
     return _authenticate(email, password, 'signInWithPassword');
+  }
+
+  void logout() {
+    _token = null;
+    _userId = null;
+    _expiryDate = null;
+    notifyListeners();
   }
 }
